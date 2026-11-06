@@ -2,7 +2,7 @@
 <html lang="es"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#050505">
+<meta name="theme-color" content="#161616">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -28,7 +28,7 @@
 }
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--ink);min-height:100%}
-body{background:radial-gradient(120% 60% at 15% 0%,#1E1E1E 0%,transparent 60%),radial-gradient(90% 50% at 100% 100%,#161616 0%,transparent 60%),var(--bg);background-attachment:fixed}
+body{background:linear-gradient(180deg,#161616 0px,#0C0C0C 180px,transparent 420px),radial-gradient(90% 45% at 15% 25%,rgba(30,30,30,.45) 0%,transparent 70%),var(--bg);background-attachment:fixed}
 body{font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
 h1,h2,h3,.now-t,.sum b{letter-spacing:-.02em}
 .wrap{max-width:520px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px calc(100px + env(safe-area-inset-bottom,0px))}
@@ -120,7 +120,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 *{-webkit-tap-highlight-color:transparent}
 :focus{outline:none}
 button:focus-visible,input:focus-visible,select:focus-visible,[data-edit]:focus-visible{outline:2px solid rgba(255,255,255,.55)!important;outline-offset:2px}
-.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(10,10,10,.72);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-top:1px solid var(--line);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));padding-bottom:env(safe-area-inset-bottom,0px);z-index:6}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:#161616;border-top:1px solid var(--line);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));padding-bottom:env(safe-area-inset-bottom,0px);z-index:6}
 .tabs nav{max-width:520px;margin:0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
 .tabs button{border:0;background:transparent;padding:9px 0 10px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted)}
 .tabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
