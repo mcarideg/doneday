@@ -28,6 +28,7 @@
 }
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--ink);min-height:100%}
+body{min-height:100vh;min-height:100dvh}
 body{background:linear-gradient(180deg,#161616 0px,#0C0C0C 180px,transparent 420px),radial-gradient(90% 45% at 15% 25%,rgba(30,30,30,.45) 0%,transparent 70%),var(--bg);background-attachment:fixed}
 body{font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
 h1,h2,h3,.now-t,.sum b{letter-spacing:-.02em}
@@ -264,6 +265,10 @@ button:active,.tap:active,label.ch:active{transform:scale(.96);opacity:.85}
 .wh-it.on{color:var(--ink);font-size:26px;font-weight:700}
 .wh-sep{font-size:26px;font-weight:700;padding:0 10px;z-index:1}
 .tp-foot{display:flex;justify-content:flex-end}
+.bt-row{border-bottom:0;padding:0}
+.tp-open.open{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.07)}
+.wheel-sm{height:160px;margin:0}.wheel-sm .wh-col{height:160px;padding:60px 0}
+#bWheel:not(:empty){animation:inF .22s var(--ease)}
 .seg-t{position:absolute;top:4px;bottom:4px;min-width:6px;background:rgba(255,255,255,.72);color:#0A0A0A;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;overflow:hidden;}
 .seg-t.first{background:#FFFFFF}
 .db-row.task .t{font-weight:500}
@@ -538,12 +543,11 @@ function renderDia(){
   const startAt=timeline(date).first;
   if(past){
     const due=S.tasks.filter(t=>t.due===date);
-    return exampleBanner()+`<div class="sec-head"><h2>${DAYS_LONG[view.day]} ${parse(date).getDate()}</h2><span class="meta">Día pasado</span></div>
-    ${due.length?`<div class="list">${due.map(taskRow).join("")}</div>`:""}`+fixed;
+    return exampleBanner()+fixed+(due.length?`<div class="sec-head"><h2>Vencía este día</h2><span class="meta">${due.filter(t=>t.done).length}/${due.length} hechas</span></div><div class="list">${due.map(taskRow).join("")}</div>`:"");
   }
   const warn=isToday&&PL.unfit.length?`<div class="warnbox"><b>No cabe a tiempo:</b> ${PL.unfit.map(t=>esc(t.title)).join(", ")}. Cambia la fecha límite o quita algo.</div>`:"";
   return exampleBanner()+(now?nowCard(now,date):"")+fixed+warn+`
-  <div class="sec-head"><h2>${isToday?"Plan de hoy":"Plan · "+DAYS_LONG[view.day]+" "+parse(date).getDate()}</h2><span class="meta ${load>cap+0.01?"over":""}">${load>0.01?`${fmtH(load)} planificado`:""}</span></div>
+  <div class="sec-head"><h2>${isToday?"Plan de hoy":"Plan del día"}</h2><span class="meta ${load>cap+0.01?"over":""}">${load>0.01?`${fmtH(load)} planificado`:""}</span></div>
   <div class="list" id="planList" data-date="${date}">${items.length?items.map((x,i)=>`<div class="swr" data-sw="${x.t.id}" data-h="${x.h}" data-date="${date}">${swBg}<div class="row">
     <span class="num-b ${i===0&&isToday?"first":""}" data-drag="${x.t.id}" aria-label="Arrastrar para mover">${i+1}</span>
     <div class="txt tap" data-edit="${x.t.id}"><div class="t">${prioMark(x.t)}${esc(x.t.title)}${x.parts>1?`<span class="part">${x.part}/${x.parts}</span>`:""}</div><div class="s">${x.t.recId?ICON.rep:""}${startAt[x.t.id]!=null?`<span class="at">${hhmm(startAt[x.t.id])}</span> · `:""}${fmtH(x.h)}${x.t.pin&&!x.t.recId?ICON.pin:""}</div></div>
@@ -695,8 +699,9 @@ function openSheet(){
     <div class="f"><label>Días (se repite cada semana)</label>
       <div class="chips" id="bDays">${DAYS.map((d,i)=>`<button type="button" class="ch dch ${i===view.day?"on":""}" data-bd="${i}" aria-pressed="${i===view.day}">${d}</button>`).join("")}</div>
       <div class="chips" style="margin-top:6px"><button type="button" class="linkbtn" data-bset="0,1,2,3,4">Lunes a viernes</button><button type="button" class="linkbtn" data-bset="5,6">Fin de semana</button><button type="button" class="linkbtn" data-bset="0,1,2,3,4,5,6">Todos</button></div></div>
-    <div class="grid2"><div class="f"><label for="bStart">Empieza</label><input id="bStart" type="time" value="09:00"></div>
-    <div class="f"><label for="bEnd">Acaba</label><input id="bEnd" type="time" value="10:00"></div></div>
+    <input type="hidden" id="bStart" value="09:00"><input type="hidden" id="bEnd" value="10:00">
+    <div class="sleep-row bt-row"><button type="button" class="tp-open" data-bt="bStart"><small>Empieza</small><b id="bStartL">09:00</b></button><button type="button" class="tp-open" data-bt="bEnd"><small>Acaba</small><b id="bEndL">10:00</b></button></div>
+    <div id="bWheel"></div>
     <div class="f"><label for="bCat">Categoría</label><select id="bCat">${catOpts}</select></div>`;
   if(kind==="task")html=`<h3>Nueva tarea</h3>
     <div class="f"><label for="tTitle">Tarea</label><input id="tTitle" placeholder="Entregar trabajo de…" required></div>
@@ -733,6 +738,22 @@ function renderTP(){
     let t;c.addEventListener("scroll",()=>{markWheel(c);clearTimeout(t);t=setTimeout(()=>{readTP()},120)});
     c.addEventListener("click",e=>{const it=e.target.closest(".wh-it");if(it)c.scrollTo({top:[...c.children].indexOf(it)*IH,behavior:"smooth"})});
   }
+}
+// same wheel, inline inside the schedule-block form
+function openBlockWheel(field){
+  const box=$("#bWheel");if(!box)return;
+  const btns=document.querySelectorAll("[data-bt]");
+  if(box.dataset.field===field&&box.innerHTML){box.innerHTML="";box.dataset.field="";btns.forEach(b=>b.classList.remove("open"));return}
+  box.dataset.field=field;btns.forEach(b=>b.classList.toggle("open",b.dataset.bt===field));
+  const col=(id,n,step)=>`<div class="wh-col" id="${id}">${Array.from({length:n/step},(_,i)=>`<div class="wh-it" data-v="${i*step}">${pad(i*step)}</div>`).join("")}</div>`;
+  box.innerHTML=`<div class="wheel wheel-sm"><div class="wh-band"></div>${col("bwH",24,1)}<div class="wh-sep">:</div>${col("bwM",60,5)}</div>`;
+  const [h,m]=$("#"+field).value.split(":").map(Number),H=$("#bwH"),M=$("#bwM");
+  requestAnimationFrame(()=>{H.scrollTop=h*IH;M.scrollTop=Math.round(m/5)*IH;markWheel(H);markWheel(M)});
+  const read=()=>{const hh=Math.min(23,Math.max(0,Math.round(H.scrollTop/IH))),mm=Math.min(55,Math.round(M.scrollTop/IH)*5),v=`${pad(hh)}:${pad(mm)}`;
+    $("#"+field).value=v;$("#"+field+"L").textContent=v;
+    if(field==="bStart"&&$("#bEnd").value<=v){const e=Math.min(23*60+55,toMin(v)+60),ev=hhmm(e);$("#bEnd").value=ev;$("#bEndL").textContent=ev}};
+  for(const c of [H,M]){let t;c.addEventListener("scroll",()=>{markWheel(c);clearTimeout(t);t=setTimeout(read,120)});
+    c.addEventListener("click",e=>{const it=e.target.closest(".wh-it");if(it)c.scrollTo({top:[...c.children].indexOf(it)*IH,behavior:"smooth"})})}
 }
 function markWheel(c){const i=Math.round(c.scrollTop/IH);[...c.children].forEach((el,j)=>el.classList.toggle("on",j===i))}
 function readTP(){
@@ -992,6 +1013,7 @@ document.addEventListener("click",e=>{
   const t=e.target.closest("button,input");if(!t)return;
   if(t.id==="cancel")return closeSheet();
   if(t.dataset.tp)return openTimePicker(t.dataset.tp);
+  if(t.dataset.bt)return openBlockWheel(t.dataset.bt);
   if(t.dataset.tpw){readTP();TP.which=t.dataset.tpw;return renderTP()}
   if(t.id==="tpDone")return saveTP();
   if(t.id==="toggleFixed"||t.id==="toggleFixed2"){view.showFixed=!view.showFixed;return render()}
