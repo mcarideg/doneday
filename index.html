@@ -679,7 +679,10 @@ function dayBar(blocks,date){
   // short tasks get a readable minimum width; neighbours shift just enough to keep a gap
   const TW=(document.querySelector(".db-track")||{}).clientWidth||Math.min(innerWidth,560)-34,gP=4/TW*100,mP=14/TW*100,LY=new Map();let prevE=-1e9;
   const cP=2/TW*100;let prevB=-1;
-  [...DS,...TL].sort((p,q)=>p.a-q.a).forEach(x=>{const vis=Math.max(pos(x.b)-pos(x.a)-gP,mP);const touch=Math.abs(x.a-prevB)<1;let l=Math.max(touch?prevE+cP:pos(x.a)+gP/2,prevE+(touch?cP:gP));prevB=x.b;if(l+vis>100)l=100-vis;LY.set(x,[l,vis]);prevE=l+vis});
+  // done blocks are anchored at the moment they were finished and grow backwards, so they always sit behind the "now" line
+  let nextL=1e9,nextA=-1;[...DS].sort((p,q)=>q.b-p.b).forEach(x=>{const vis=Math.max(pos(x.b)-pos(x.a)-gP,mP);const touch=Math.abs(x.b-nextA)<1;
+    let e=Math.min(pos(x.b)-gP/2,nextL-(touch?cP:gP)),l=Math.max(0,e-vis);LY.set(x,[l,Math.max(e-l,0)]);nextL=l;nextA=x.a;prevE=Math.max(prevE,e);prevB=Math.max(prevB,x.b)});
+  [...TL].sort((p,q)=>p.a-q.a).forEach(x=>{const vis=Math.max(pos(x.b)-pos(x.a)-gP,mP);const touch=Math.abs(x.a-prevB)<1;let l=Math.max(touch?prevE+cP:pos(x.a)+gP/2,prevE+(touch?cP:gP));prevB=x.b;if(l+vis>100)l=100-vis;LY.set(x,[l,vis]);prevE=l+vis});
   const bx=x=>{const [l,v]=LY.get(x);return `left:${l}%;width:${v}%`};
   const tsegs=[...DS,...TL].sort((p,q)=>(tix.get(p.t.id)-tix.get(q.t.id))||((q.done?1:0)-(p.done?1:0))||(p.a-q.a)).map(x=>{const w=LY.get(x)[1];
     if(x.done)return `<span class="seg-t done" data-k="${pend.has(x.t.id)?"bd-"+x.t.id+"-"+x.a:kOf(x.t.id)}" style="${bx(x)}" title="Hecha: ${esc(x.t.title)} ${hhmm(x.a)}–${hhmm(x.b)}">${w*TW/100>=13?'<svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 6.3l2.3 2.2 4.7-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':""}</span>`;
